@@ -11,5 +11,6 @@ void initAcc(void);
 
 void readValues(double* x, double* y, double* z);
 
+int16_t twosCompToDec(uint16_t two_compliment_val);
 
 #endif 

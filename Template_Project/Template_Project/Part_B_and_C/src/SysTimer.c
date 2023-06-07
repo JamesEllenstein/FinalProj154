@@ -9,7 +9,7 @@
 #include "SysTimer.h"
 #include "motor.h"
 
-static uint32_t volatile step;
+static uint32_t volatile msTicks;
 
 void SysTick_Init(void) {
 	// SysTick Control & Status Register
@@ -35,10 +35,23 @@ void SysTick_Init(void) {
 	NVIC_SetPriority(SysTick_IRQn, 1); // Set Priority to 1
 }
 
-void SysTick_Handler(void) {
-	//TODO
+void SysTick_Handler(void){
+	++msTicks;
+	if (msTicks == 10) {
+		rotate();
+		msTicks = 0;
+	}
+}
+	
+//******************************************************************************************
+// Delay in ms
+//******************************************************************************************
+void delay (uint32_t T){
+	msTicks = 0;
+	SysTick->VAL = 0;
+	SysTick->LOAD = 79999;
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+	while (msTicks < T) {}
+	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 }
 
-void delay(uint32_t ms) {
-	//TODO
-}

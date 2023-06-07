@@ -1,25 +1,50 @@
-/*
- * ECE 153B - Spring 2023
- *
- * Name(s):
- * Section:
- * Lab: 6C
- */
-
 #include "LED.h"
 
-void LED_Init(void){
-	//TODO
+void LED_Init(void) {
+
+
+    // Enable GPIO Clock
+
+    RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN); //equivalent to (1<<0)
+
+    // Initialize Green LED
+
+		GPIOA->MODER &= ~GPIO_MODER_MODE5_1;	
+
+		GPIOA->OTYPER &=  ~GPIO_OTYPER_OT5;
+
+		GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD5;
+
+		GPIOA->ODR &= ~(1<<5);
+
+
+
+
+
+	
+
 }
 
-void LED_On(void){
-	//TODO
+
+
+void LED_Off(void) {
+
+	GPIOA->ODR &= ~(1<<5);
+
 }
 
-void LED_Off(void){
-	//TODO
+
+
+void LED_On(void) {
+
+	GPIOA->ODR |= (1<<5);
+
 }
 
-void LED_Toggle(void){
-	//TODO
+
+
+void LED_Toggle(void) {
+
+	GPIOA->ODR ^= (1<<5);
+
 }

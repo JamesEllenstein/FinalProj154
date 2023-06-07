@@ -1,5 +1,7 @@
 #include "I2C.h"
 
+extern void Error_Handler(void);
+
 // Inter-integrated Circuit Interface (I2C)
 // up to 100 Kbit/s in the standard mode, 
 // up to 400 Kbit/s in the fast mode, and 
@@ -14,7 +16,17 @@
 //                        I2C GPIO Initialization
 //===============================================================================
 void I2C_GPIO_Init(void) {
-	//TODO
+	// [DONE?]
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	
+	GPIOB->MODER &= ~(GPIO_MODER_MODE6 | GPIO_MODER_MODE7);
+	GPIOB->MODER |= (GPIO_MODER_MODE6_1 | GPIO_MODER_MODE7_1);
+	GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL6 | GPIO_AFRL_AFSEL7);
+	GPIOB->AFR[0] |= GPIO_AFRL_AFSEL6_2 | GPIO_AFRL_AFSEL7_2;
+	GPIOB->OTYPER |= (GPIO_OTYPER_ODR_6 | GPIO_OTYPER_ODR_7);
+	GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD6 | GPIO_PUPDR_PUPD7);
+	GPIOB->PUPDR |= (GPIO_PUPDR_PUPD6_0 | GPIO_PUPDR_PUPD7_0);
+	GPIOB->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR6 | GPIO_OSPEEDER_OSPEEDR7;
 }
 	
 #define I2C_TIMINGR_PRESC_POS	28
@@ -27,8 +39,47 @@ void I2C_GPIO_Init(void) {
 //                          I2C Initialization
 //===============================================================================
 void I2C_Initialization(void){
-	uint32_t const OwnAddr = 0x52;
-	//TODO
+	uint32_t OwnAddr = 0x52;
+	
+	//I2C clock setup
+	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
+	RCC->CCIPR &= ~(RCC_CCIPR_I2C1SEL);
+	RCC->CCIPR |= RCC_CCIPR_I2C1SEL_0;
+	RCC->APB1RSTR1 |= RCC_APB1RSTR1_I2C1RST;
+	RCC->APB1RSTR1 &= ~RCC_APB1RSTR1_I2C1RST;
+	
+	//I2C configuration
+	I2C1->CR1 &= ~I2C_CR1_PE;
+	int count = 0;
+	while (count < 5000) {
+		count++;
+	}
+	I2C1->CR1 &= ~I2C_CR1_ANFOFF;
+	I2C1->CR1 &= ~I2C_CR1_DNF;
+	I2C1->CR1 |= I2C_CR1_ERRIE;
+	I2C1->CR1 &= ~I2C_CR1_NOSTRETCH;
+	I2C1->CR2 &= ~I2C_CR2_ADD10;
+	I2C1->CR2 |= I2C_CR2_NACK;
+	I2C1->CR2 |= I2C_CR2_AUTOEND;
+	
+	//Setup Timing Configuration
+	I2C1->TIMINGR &= ~I2C_TIMINGR_PRESC;
+	I2C1->TIMINGR |= 7UL << 28;
+	
+	I2C1->TIMINGR &= ~(I2C_TIMINGR_SCLDEL | I2C_TIMINGR_SCLH | I2C_TIMINGR_SCLL | I2C_TIMINGR_SDADEL);
+	I2C1->TIMINGR |= 10UL << 20; //SCLDEL
+	I2C1->TIMINGR |= 12UL << 16; //SDADEL
+	I2C1->TIMINGR |= 40UL << 8; //SCLH
+	I2C1->TIMINGR |= 47UL; //SCLL
+	
+	//Adressing setup
+	I2C1->OAR1 &= ~I2C_OAR1_OA1EN;
+	I2C1->OAR1 &= ~I2C_OAR1_OA1MODE;
+	I2C1->OAR1 |= 0x52 << 1;
+	I2C1->OAR1 |= I2C_OAR1_OA1EN;
+	
+	//Re-enable peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
 }
 
 //===============================================================================

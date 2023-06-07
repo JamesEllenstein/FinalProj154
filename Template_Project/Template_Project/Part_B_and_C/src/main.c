@@ -21,21 +21,23 @@
 static char buffer[IO_SIZE];
 
 void UART_onInput(char* inputs, uint32_t size) {
-	//TODO
+	if (size == 1) {
+		
+	}
 }
 
 int main(void) {
 	// Switch System Clock = 80 MHz
 	System_Clock_Init(); 
-	Motor_Init();
+	//Motor_Init();
 	SysTick_Init();
 	UART2_Init();
-	LED_Init();	
-	SPI1_GPIO_Init();
-	SPI1_Init();
-	initAcc();
-	I2C_GPIO_Init();
-	I2C_Initialization();
+	//LED_Init();	
+	//SPI1_GPIO_Init();
+	//SPI1_Init();
+	//initAcc();
+	//I2C_GPIO_Init();
+	//I2C_Initialization();
 	
 	sprintf(buffer, "Program Starts.\r\n");
 	UART_print(buffer);
