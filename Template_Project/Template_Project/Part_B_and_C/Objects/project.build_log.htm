@@ -22,36 +22,39 @@ Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 C:\Users\jamesellenstein\Desktop\FinalProj154\Template_Project\Template_Project\Part_B_and_C\project.uvprojx
-Project File Date:  05/31/2023
+Project File Date:  06/12/2023
 
 <h2>Output:</h2>
 *** Using Compiler 'V6.19', folder: 'C:\Keil_v5\ARM\ARMCLANG\Bin'
 Build target 'Target 1'
-src/UART.c(165): warning: passing 'volatile char[256]' to parameter of type 'char *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-                UART_onInput(inputs, input_size);
-                             ^~~~~~
-src/UART.h(28): note: passing argument to parameter 'inputs' here
-void UART_onInput(char* inputs, uint32_t size);
-                        ^
-src/UART.c(182): warning: initializing 'uint8_t *' (aka 'unsigned char *') with an expression of type 'volatile uint8_t *' (aka 'volatile unsigned char *') discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-                uint8_t * tmp = active;
-                          ^     ~~~~~~
-src/UART.c(185): warning: passing 'volatile uint8_t *' (aka 'volatile unsigned char *') to parameter of type 'char *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-                UART_print(active);
-                           ^~~~~~
-src/UART.c(134): note: passing argument to parameter 'data' here
-void UART_print(char* data) {
-                      ^
-src/UART.c(200): warning: implicit conversion loses integer precision: 'volatile uint16_t' (aka 'volatile unsigned short') to 'char' [-Wimplicit-int-conversion]
-                transfer_data(USART2->RDR);
-                ~~~~~~~~~~~~~ ~~~~~~~~^~~
-src/UART.c(13): warning: unused variable 'tx' [-Wunused-variable]
-static volatile DMA_Channel_TypeDef * tx;
-                                      ^
+src/main.c(23): warning: no previous extern declaration for non-static variable 'complete' [-Wmissing-variable-declarations]
+volatile uint8_t complete = 0;
+                 ^
+src/main.c(23): note: declare 'static' if the variable is not intended to be used outside of this translation unit
+volatile uint8_t complete = 0;
+         ^
+src/main.c(24): warning: no previous extern declaration for non-static variable 'pos' [-Wmissing-variable-declarations]
+volatile uint8_t pos = 0;
+                 ^
+src/main.c(24): note: declare 'static' if the variable is not intended to be used outside of this translation unit
+volatile uint8_t pos = 0;
+         ^
+src/main.c(25): warning: no previous extern declaration for non-static variable 'cAfterR' [-Wmissing-variable-declarations]
+volatile uint8_t cAfterR = 0;
+                 ^
+src/main.c(25): note: declare 'static' if the variable is not intended to be used outside of this translation unit
+volatile uint8_t cAfterR = 0;
+         ^
+src/main.c(64): warning: binary integer literals are a GNU extension [-Wgnu-binary-literal]
+        SlaveAddress = 0b1001000 << 1;
+                       ^
+src/main.c(57): warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+        double x,y,z;
+               ^
 5 warnings generated.
-compiling UART.c...
+compiling main.c...
 linking...
-Program Size: Code=9360 RO-data=996 RW-data=8 ZI-data=2672  
+Program Size: Code=13672 RO-data=1032 RW-data=12 ZI-data=2684  
 FromELF: creating hex file...
 ".\Objects\project.axf" - 0 Error(s), 5 Warning(s).
 

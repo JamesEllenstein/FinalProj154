@@ -10,7 +10,11 @@
 #include "motor.h"
 
 static uint32_t volatile msTicks;
-
+static uint32_t volatile sTicks;
+volatile uint8_t rot = 0;
+void setRot(int x) {
+	rot = x;
+}
 void SysTick_Init(void) {
 	// SysTick Control & Status Register
 	SysTick->CTRL = 0; // Disable SysTick IRQ and SysTick Counter
@@ -37,7 +41,8 @@ void SysTick_Init(void) {
 
 void SysTick_Handler(void){
 	++msTicks;
-	if (msTicks == 10) {
+	sTicks++;
+	if (msTicks >= 10 && rot) {
 		rotate();
 		msTicks = 0;
 	}
@@ -48,10 +53,11 @@ void SysTick_Handler(void){
 //******************************************************************************************
 void delay (uint32_t T){
 	msTicks = 0;
+	sTicks = 0;
 	SysTick->VAL = 0;
 	SysTick->LOAD = 79999;
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
-	while (msTicks < T) {}
+	while (sTicks < T) {}
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 }
 

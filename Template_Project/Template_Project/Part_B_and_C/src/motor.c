@@ -10,7 +10,7 @@
 static const uint32_t MASK = 0;//TODO
 static const uint32_t HalfStep[8] = {0,0,0,0,0,0,0,0};//TODO
 */
-static volatile int8_t dire = 0;
+static volatile int8_t dire = 1;
 static volatile uint8_t step = 0;
 //5-A Blue  8-B Pink  6-A`Yellow  9-B`Orange
 /*

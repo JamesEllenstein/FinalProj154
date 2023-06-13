@@ -9,6 +9,7 @@
 
 #include "UART.h"
 #include "DMA.h"
+#include <string.h>
 
 static volatile DMA_Channel_TypeDef * tx;
 static volatile char inputs[IO_SIZE];
@@ -39,12 +40,13 @@ void UART1_Init(void) {
 	RCC->CCIPR |= RCC_CCIPR_USART1SEL_0;
 	
 	USART1->CR1 |= USART_CR1_TCIE | USART_CR1_RXNEIE;
-	
 }
 
 void UART2_Init(void) {
 	UART2_GPIO_Init();
 	//Enable clock for UART2
+	tx = DMA1_Channel7;
+	DMA_Init_UARTx(DMA1_Channel7, USART2);
 	RCC->APB1ENR1 &= ~(RCC_APB1ENR1_USART2EN);
 	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 	
@@ -53,14 +55,13 @@ void UART2_Init(void) {
 	RCC->CCIPR |= RCC_CCIPR_USART2SEL_0;
 	
 	//FIXME CAll dma func and set cmar + DMA-- select channel in dma [DONE?]
-	DMA_Init_UARTx(DMA1_Channel7, USART2);
+
 	DMA1_Channel7 -> CMAR = (uint32_t)active; //FIXME?
 	DMA1_CSELR->CSELR &= ~DMA_CSELR_C7S;
-	DMA1_CSELR->CSELR |= 1 << 25; // no mask available
-	
+	DMA1_CSELR->CSELR |= DMA_ISR_TCIF7; // no mask available
 	USART_Init(USART2);
+	NVIC_SetPriority(USART2_IRQn , 0);
 	NVIC_EnableIRQ(USART2_IRQn);
-	NVIC_SetPriority(USART2_IRQn , 1);
 
 }
 
@@ -118,6 +119,8 @@ void UART2_GPIO_Init(void) {
 void USART_Init(USART_TypeDef* USARTx) {
 	// Disable USART of choice
 	USARTx->CR1 &= ~USART_CR1_UE;
+	USARTx->CR1 &= ~(USART_CR1_M | USART_CR1_OVER8);
+	USARTx->CR2 &= ~(USART_CR2_STOP);
 	//[TODO] Configure baud rate
 	USARTx->BRR = 8333;
 	//Enable transmitter and reciever
@@ -133,6 +136,26 @@ void USART_Init(USART_TypeDef* USARTx) {
 */
 void UART_print(char* data) {
 	//TODO
+	
+	uint8_t len = strlen(data);
+	for(uint8_t i = 0; i < len; i++) {
+		pending[i] = data[i];
+	}
+	pending_size = len;
+	
+	if((tx->CCR & DMA_CCR_EN) == 0) {
+		uint8_t * tmp = active;
+		active = pending;
+		pending = tmp;
+		
+		tx->CMAR = (uint32_t) active;
+		tx->CNDTR = pending_size;
+		tx->CCR |= DMA_CCR_EN;
+		pending_size = 0;
+	}
+	
+	
+	/*
 	pending_size = 0;
 	if ((DMA1_Channel7->CCR & DMA_CCR_EN) == DMA_CCR_EN) {
 		for (int i = 0; i < IO_SIZE; i++) {
@@ -148,13 +171,14 @@ void UART_print(char* data) {
 			active_size++;
 			
 		}
-		DMA1_Channel7->CNDTR = active_size;
+ 		DMA1_Channel7->CNDTR = active_size;
 		DMA1_Channel7->CCR |= DMA_CCR_EN;
 	}
+	
 	//Transfer char array to buffer
 	//Check DMA status. If DMA is ready, send data
 	//If DMA is not ready, put the data aside
-	
+	*/
 	
 }
  
@@ -163,12 +187,13 @@ void UART_print(char* data) {
 */
 void transfer_data(char ch) {
 	//TODO
+	inputs[input_size++] = ch;
 	if (ch == '\n') {
 		UART_onInput(inputs, input_size);
+		for(int i = 0; i< IO_SIZE; i++) {
+			inputs[i] = 0;
+		}
 		input_size = 0;
-	} else {
-		inputs[input_size] = ch;
-		input_size++;
 	}
 	// Append character to input buffer.
 	// If the character is end-of-line, invoke UART_onInput
@@ -183,8 +208,12 @@ void on_complete_transfer(void) {
 	if (pending_size > 0) {
 		uint8_t * tmp = active;
 		active = pending;
-		pending = tmp;
-		UART_print(active);
+		 pending = tmp;
+		
+		tx->CMAR = (uint32_t) active;
+		tx->CPAR = (uint32_t) &USART2->TDR;
+		tx->CNDTR = pending_size;
+		tx->CCR |= DMA_CCR_EN;
 	}
 	pending_size = 0;
 }
@@ -199,7 +228,7 @@ void USART2_IRQHandler(void){
 	//TODO
 	NVIC_ClearPendingIRQ(USART2_IRQn);
 	if ((USART2->ISR & USART_ISR_RXNE) == USART_ISR_RXNE) {
-		transfer_data(USART2->RDR);
+		transfer_data((uint8_t)(USART2->RDR & 0xFF));
 	}
 	if ((USART2->ISR & USART_ISR_TC) == USART_ISR_TC){
 		USART2->ICR |= USART_ICR_TCCF;

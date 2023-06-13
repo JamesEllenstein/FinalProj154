@@ -9,4 +9,5 @@
   src\SysClock.h src\SysTimer.h src\LED.h src\DMA.h src\UART.h \
   src\motor.h src\SPI.h src\I2C.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stddef.h src\accelerometer.h \
+  C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdio.h
